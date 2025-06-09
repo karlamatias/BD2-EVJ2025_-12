@@ -17,9 +17,9 @@ PASSWORD = "4321"
 BINLOG_INDEX = "C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Data\\LAPLNVIP5-WIN-bin.index"
 
 # DATA COMPU KARLA
-# USER = " "
-# PASSWORD = " "
-# BINLOG_INDEX = " "
+#USER = "root"
+#PASSWORD = "12345"
+#BINLOG_INDEX = "C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Data\\KARLA_MATIAS-bin.index"
 
 DATABASE = "hotelera"
 CSV_DIR = "./archivos"
