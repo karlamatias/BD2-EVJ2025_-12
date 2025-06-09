@@ -7,43 +7,45 @@ from mysql.connector.constants import ClientFlag
 
 # Configuración
 
-#Cambia aqui el nombre del user y el pasword segun tu base de datos
+# Cambia aqui el nombre del user y el pasword segun tu base de datos
 # El BINLOG_INDEX tienes que colocar la ruta correcta para tu compu, esta generalmente en ProgamData, solo debes de 
 # cambiar el archivo KARLA_MATIAS-bin.index por el nombre del  tuyo
 
-#DATA COMPU HANIA
-#USER = " "
-#PASSWORD = " "
-#BINLOG_INDEX = " "
-
+# DATA COMPU HANIA
 USER = "root"
-PASSWORD = "12345"
+PASSWORD = "4321"
+BINLOG_INDEX = "C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Data\\LAPLNVIP5-WIN-bin.index"
+
+# DATA COMPU KARLA
+# USER = " "
+# PASSWORD = " "
+# BINLOG_INDEX = " "
+
 DATABASE = "hotelera"
 CSV_DIR = "./archivos"
 OUTPUT_DIR = "./resultados"
 INCREMENTAL_BACKUP_DIR = "./incrementales"
-BINLOG_INDEX = "C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Data\\KARLA_MATIAS-bin.index"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(INCREMENTAL_BACKUP_DIR, exist_ok=True)
 
-#Cargamos las tablas por dia (Pareja 3)
-TABLAS_POR_DIA = {
-    1: ["cliente", "habitacion"],
-    2: ["log_habitacion1"],
-    3: ["reserva"],
-    4: ["log_habitacion2"],
-    5: ["pago"]
+# Cargamos las tablas por dia (Pareja 3)
+CARGAS_POR_DIA = {
+    1: [{"tabla": "cliente", "archivo": "cliente.csv"},
+        {"tabla": "habitacion", "archivo": "habitacion.csv"}],
+    2: [{"tabla": "log_habitacion", "archivo": "log_habitacion1.csv"}],
+    3: [{"tabla": "reserva", "archivo": "reserva.csv"}],
+    4: [{"tabla": "log_habitacion", "archivo": "log_habitacion2.csv"}],
+    5: [{"tabla": "pago", "archivo": "pago.csv"}]
 }
 
-#Cargamos lo archivos que estan en la carpeta "archivos"
-ARCHIVOS_CSV = {
-    "cliente": "cliente.csv",
-    "habitacion": "habitacion.csv",
-    "reserva": "reserva.csv",
-    "pago": "pago.csv",
-    "log_habitacion1": "log_habitacion1.csv",
-    "log_habitacion2": "log_habitacion2.csv"
+# Nombres de las columnas en la base de datos, coincidiendo en orden con el csv
+COLUMNAS_POR_TABLA = {
+    "cliente": "(id_cliente, nombre, correo, telefono)",
+    "habitacion": "(id_habitacion, tipo, precio)",
+    "log_habitacion": "(time_estampx, status, id_habitacion)",
+    "reserva": "(id_reserva, id_cliente, id_habitacion, fecha_entrada, fecha_salida)",
+    "pago": "(id_pago, id_reserva, fecha_pago, monto, metodo_pago)"
 }
 
 #Conexion base de datos y conexion hacia los bin
@@ -77,8 +79,10 @@ def cargar_csv(cursor, tabla, archivo_relativo):
         FIELDS TERMINATED BY ',' 
         ENCLOSED BY '"'
         LINES TERMINATED BY '\\n'
-        IGNORE 1 ROWS;
+        IGNORE 1 ROWS 
+        {COLUMNAS_POR_TABLA.get(tabla, "")};
     """)
+    print(f"Filas insertadas: {cursor.rowcount}")
 
 def mostrar_resultados(cursor, tabla):
     print(f"\nResultados SELECT * FROM {tabla}:")
@@ -120,7 +124,7 @@ def crear_backup_incremental_binario(dia, start_time, end_time):
     print("Backup incremental binario generado.")
 
 def main(dia):
-    if dia not in TABLAS_POR_DIA:
+    if dia not in CARGAS_POR_DIA:
         print("Día no válido. Debe estar entre 1 y 5.")
         return
 
@@ -131,12 +135,12 @@ def main(dia):
     conn = conectar()
     cursor = conn.cursor()
 
-    for tabla in TABLAS_POR_DIA[dia]:
-        archivo = ARCHIVOS_CSV.get(tabla)
-        if not archivo:
-            print(f"No se encontró archivo CSV para la tabla {tabla}")
-            continue
-        cargar_csv(cursor, tabla, os.path.join(CSV_DIR, archivo))  
+    for item in CARGAS_POR_DIA[dia]:
+        tabla = item["tabla"]
+        archivo = item["archivo"]
+        ruta_archivo = os.path.join(CSV_DIR, archivo)
+
+        cargar_csv(cursor, tabla, ruta_archivo)
         conn.commit()
         mostrar_resultados(cursor, tabla)  
 
