@@ -11,7 +11,7 @@ export default function Menu({ consultas, consultaActiva, onSelect, visible }) {
         padding: "20px 10px",
         display: "flex",
         flexDirection: "column",
-        height: "100vh", // Aquí el cambio clave
+        height: "100vh", 
         boxSizing: "border-box",
       }}
     >
