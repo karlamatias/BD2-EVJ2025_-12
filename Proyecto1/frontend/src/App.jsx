@@ -3,6 +3,7 @@ import Caratula from "./component/caratula";
 import Menu from "./component/menu";
 import Resultado from "./component/Resultado";
 import Menu2 from "./component/menu2";
+import Correlativo_form from "./component/Correlativo_form";
 
 const consultas = [
   "Aspirantes por tipo de institución educativa",
@@ -22,7 +23,11 @@ const consultas = [
   "Carreras con más reprobados primer intento",
 ];
 
+
+
 export default function App() {
+  const [parametro, setParametro] = useState("");
+  const [requiereParametro, setRequiereParametro] = useState(false);
   const [resultado, setResultado] = useState(null);
   const [consultaActiva, setConsultaActiva] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,18 +35,33 @@ export default function App() {
   const [showIntro, setShowIntro] = useState(true);
 
   const fetchConsulta = async (id, nombre) => {
-    setLoading(true);
-    try {
-      const res = await fetch(`http://localhost:3001/consulta/${id}`);
-      const data = await res.json();
-      setResultado(data);
-      setConsultaActiva(nombre);
-      setMenuVisible(false);
-    } catch (error) {
-      setResultado({ error: "Error al obtener datos" });
+    setConsultaActiva(nombre);
+    setMenuVisible(false);
+
+    if (id == 14) {
+      setRequiereParametro(true);
+      setResultado(null);
+      return; 
     }
-    setLoading(false);
+
+    await ejecutarConsulta(id);
   };
+
+  const ejecutarConsulta = async (id, param = "") => {
+  setLoading(true);
+  try {
+    const url = param
+      ? `http://localhost:3001/consulta/${id}/${param}`
+      : `http://localhost:3001/consulta/${id}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    setResultado(data);
+  } catch (error) {
+    setResultado({ error: "Error al obtener datos" });
+  }
+  setLoading(false);
+};
+
 
   if (showIntro) {
     return <Caratula onIngresar={() => setShowIntro(false)} />;
@@ -84,6 +104,20 @@ export default function App() {
         <h2 style={{ color: "#007acc", marginBottom: 20 }}>
           Resultado: {consultaActiva || "Selecciona una consulta"}
         </h2>
+
+        {requiereParametro && (
+          <Correlativo_form
+            parametro={parametro}
+            setParametro={setParametro}
+            onSubmit={() => {
+              const id = consultas.findIndex((c) => c === consultaActiva) + 1;
+              ejecutarConsulta(id, parametro);
+              setRequiereParametro(false);
+              setParametro("");
+            }}
+          />
+        )}
+
 
         <Resultado
           data={resultado}
