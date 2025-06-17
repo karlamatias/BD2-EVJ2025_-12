@@ -3,17 +3,21 @@ const path = require("path");
 const csv = require("csv-parser");
 const { MongoClient } = require("mongodb");
 
+//Conexion a la base de datos 
 const uri = "mongodb://localhost:27017";
 const client = new MongoClient(uri);
 
+/* Carga de datos, seleccionamos base de datos y coleccion a usar */
 async function cargarCSV() {
   try {
     await client.connect();
     const db = client.db("Proyecto1");
     const collection = db.collection("aspirantes");
 
+    // Ruta del archivo (Esta en la carpeta data)
     const filePath = path.join(__dirname, "data", "pruebas_especificas_2023.csv");
 
+    // Aquí se almacenarán temporalmente los datos fila por fila
     const aspirantes = [];
 
     fs.createReadStream(filePath)
@@ -35,6 +39,7 @@ async function cargarCSV() {
           tipo_institucion_educativa: data.tipo_institucion_educativa,
         });
       })
+      //Inserción en MongoDB cuando termina de leer
       .on("end", async () => {
         if (aspirantes.length > 0) {
           const result = await collection.insertMany(aspirantes);

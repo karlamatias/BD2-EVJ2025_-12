@@ -3,19 +3,22 @@ const cors = require("cors");
 const conectar = require("./conexion");
 const mongo_queries = require("./queries_mongo");
 
+/* Conexion y corremos en puerto 3001 */
 const app = express();
 app.use(cors());
 const port = 3001;
 
+//Consultas simples
 app.get("/consulta/:id", async (req, res) => {
   await handleQueryRequest(req, res);
 });
 
+//Consulta 15, que necesita correlativo o id del estudiante
 app.get("/consulta/:id/:correlativo", async (req, res) => {
   await handleQueryRequest(req, res);
 });
 
-
+// Conectamos a base de datos, Obtiene la colección aspirantes y el id de la consulta
 async function handleQueryRequest(req, res) {
   let db;
   try {
@@ -24,6 +27,7 @@ async function handleQueryRequest(req, res) {
     const queryId = parseInt(req.params.id); 
     const correlativo = req.params.correlativo; //correlativo de un aspirante
 
+    //Obtiene la función correcta según el ID
     const queryFunction = mongo_queries[queryId];
 
     if (queryFunction) {
