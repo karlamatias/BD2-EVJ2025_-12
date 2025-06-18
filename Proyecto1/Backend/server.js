@@ -23,7 +23,6 @@ async function handleQueryRequest(req, res) {
   let db;
   try {
     db = await conectar(); 
-    const col = db.collection("aspirantes");
     const queryId = parseInt(req.params.id); 
     const correlativo = req.params.correlativo; //correlativo de un aspirante
 
@@ -31,7 +30,7 @@ async function handleQueryRequest(req, res) {
     const queryFunction = mongo_queries[queryId];
 
     if (queryFunction) {
-      const result = await queryFunction(col, correlativo);
+      const result = await queryFunction(db, correlativo);
       res.json(result);
     } else {
       res.status(404).json({ error: "Consulta no encontrada. ID de consulta inválido." });

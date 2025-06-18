@@ -1,35 +1,39 @@
-// Consulta 13: Número promedio de intentos por materia
-module.exports = async function (col) {
+// Consulta 13: Tasa de aprobación por edad
+module.exports = async function (db) {
+    const col = db.collection("aspirantes");
   return await col
     .aggregate([
         {
-            $group: {
-                _id: {
-                    materia: "$materia",
-                    aspirante: "$correlativo_aspirante"
-                },
-                intentos: { $sum: 1 }
-            }
-        },
-        {
-            $group: {
-                _id: "$_id.materia",
-                total_intentos: { $sum: "$intentos" },
-                total_aspirantes: { $sum: 1 }
+            $match: {
+                "anio_nacimiento": { $exists: true, $type: "number", $ne: null, $ne: NaN }
             }
         },
         {
             $project: {
-                materia: "$_id",
-                promedio_intentos: {
-                    $round:[
-                        { $divide: ["$total_intentos", "$total_aspirantes"] },
+                edad: { $subtract: [new Date().getFullYear(), "$anio_nacimiento"] },
+                aprobacion: 1
+            }
+        },
+        {
+            $group: {
+                _id: "$edad",
+                total: { $sum: 1 },
+                aprobados: { $sum: { $cond: ["$aprobacion", 1, 0] } }
+            }
+        },
+        {
+            $project: {
+                edad: "$_id",
+                tasa_aprobacion: {
+                    $round : [
+                        { $multiply: [{ $divide: ["$aprobados", "$total"] }, 100] },
                         2
                     ]
                 },
                 _id: 0
             }
-        }
+        },
+        { $sort: { edad: 1 } }
     ])
     .toArray();
 };

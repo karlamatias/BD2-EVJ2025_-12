@@ -14,6 +14,7 @@ const query12 = require('./query12');
 const query13 = require('./query13');
 const query14 = require('./query14');
 const query15 = require('./query15');
+const query16 = require('./query16');
 
 
 const mongo_queries = {
@@ -31,7 +32,8 @@ const mongo_queries = {
   12: query12,
   13: query13,
   14: query14,
-  15: query15
+  15: query15,
+  16: query16
 };
 
 module.exports = mongo_queries;

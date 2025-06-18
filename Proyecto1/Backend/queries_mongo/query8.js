@@ -1,30 +1,26 @@
-// Consulta 8: Evaluaciones por mes y materia (solo instituciones públicas)
-module.exports = async function (col) {
-  return await col
-    .aggregate([
-        {
-            $match: {
-                tipo_institucion_educativa: "PUBLICO",
-                fecha_asignacion: { $exists: true, $type: "string", $ne: null, $ne: "", $ne: NaN }
-            }
-        },
-        {
-            $addFields: {
-                mes: {$month: { $toDate: "$fecha_asignacion" } }
-            }
-        },
-        {
-            $group: {
-                _id: { mes: "$mes", materia: "$materia" },
-                cantidad: { $sum: 1 },
+// Consulta 8: Distribución de aprobados por municipio y carrera
+module.exports = async function (db) {
+    const col = db.collection("aspirantes");
+    return await col
+        .aggregate([
+            {
+                $match: { aprobacion: true }
             },
-        },
-        {
-            $sort: {
-                "_id.mes": 1,  
-                "_id.materia": 1  
+            {
+                $group: {
+                    _id: {
+                        municipio: "$municipio_institucion_",
+                        carrera: "$carrera_objetivo"
+                    },
+                    total_aprobados: { $sum: 1 }
+                }
+            },
+            {
+                $sort: {
+                    "_id.municipio": 1, 
+                    "_id.carrera": 1
+                }
             }
-        }
-    ])
-    .toArray();
+        ])
+        .toArray();
 };

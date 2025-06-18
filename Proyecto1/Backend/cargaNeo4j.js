@@ -31,6 +31,7 @@ const driver = neo4j.driver(
   "bolt://localhost:7687",
   //Base de datos neo4j y contraseña 
   neo4j.auth.basic("neo4j", "12345678")
+  //neo4j.auth.basic("neo4j", "admin123")
 );
 
 //Funcion para recibir una fila del csv y convertirla en nodos y relaciones 

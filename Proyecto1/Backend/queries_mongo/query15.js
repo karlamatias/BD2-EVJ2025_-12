@@ -1,28 +1,17 @@
-// Consulta 15: Carreras con más aspirantes reprobados en primer intento
-module.exports = async function (col) {
-  return await col
-    .aggregate([
-        {
-            $match: {
-            numero_de_fecha_de_evaluaci: 1,
-            aprobacion: false
-            }
-        },
-        {
-            $group: {
-            _id: "$carrera_objetivo",
-            reprobados_primera: { $sum: 1 }
-            }
-        },
-        { $sort: { reprobados_primera: -1 } },
-        { $limit: 5 },
-        {
-            $project: {
-            carrera: "$_id",
-            reprobados_primera: 1,
-            _id: 0
-            }
+// Consulta 15: Historial completo de un aspirante (por correlativo)
+module.exports = async function (db, correlativo) {
+    const col = db.collection("aspirantes");
+    if (!correlativo) {
+        const primerAspirante = await col.findOne({});
+        if (primerAspirante) {
+            correlativo = primerAspirante.correlativo_aspirante;
+        } else {
+            throw new Error("No se encontraron aspirantes en la colección.");
         }
-    ])
-    .toArray();
+        
+    }
+    return await col
+        .find({ correlativo_aspirante: correlativo })
+        .sort({ fecha_asignacion: 1 })
+        .toArray();
 };

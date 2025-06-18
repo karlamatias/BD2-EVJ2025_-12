@@ -1,48 +1,31 @@
-// Consulta 10: Historial de desempeño por aspirante
-module.exports = async function (col) {
-  const resultados = await col
-    .aggregate([
-      {
-              $group: {
-                _id: {
-                  aspirante: "$correlativo_aspirante",
-                  materia: "$materia",
-                },
-                intentos: { $sum: 1 },
-                aprobados: {
-                  $sum: { $cond: ["$aprobacion", 1, 0] }
-                },
-                reprobados: {
-                  $sum: { $cond: ["$aprobacion", 0, 1] }
+// Consulta 10: Top 5 carreras más demandadas entre 16 y 18 años
+module.exports = async function (db) {
+    const col = db.collection("aspirantes");
+    return await col
+        .aggregate([
+            {
+                $match: {
+                    "anio_nacimiento": { $exists: true, $type: "number", $ne: null, $ne: NaN }
                 }
-              }
             },
             {
-              $project: {
-                correlativo_aspirante: "$_id.aspirante",
-                materia: "$_id.materia",
-                intentos: 1,
-                aprobados: 1,
-                reprobados: 1,
-                _id: 0
-              }
+                $addFields: {
+                    edad: { $subtract: [new Date().getFullYear(), "$anio_nacimiento"] }
+                }
             },
             {
-              $sort: {
-                correlativo_aspirante: 1,
-                materia: 1
-              }
-            }
-    ])
-    .toArray();
-    
-    return resultados.map(doc => {
-        return {
-            correlativo_aspirante: doc.correlativo_aspirante,
-            materia: doc.materia,
-            intentos: doc.intentos,
-            aprobados: doc.aprobados,
-            reprobados: doc.reprobados
-        };
-    });
+                $match: {
+                    edad: { $gte: 16, $lte: 18 }
+                }
+            },
+            {
+                $group: {
+                    _id: "$carrera_objetivo",
+                    total_aspirantes: { $sum: 1 }
+                }
+            },
+            { $sort: { total_aspirantes: -1 } },
+            { $limit: 5 }
+        ])
+        .toArray();
 };

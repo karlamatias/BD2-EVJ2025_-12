@@ -1,37 +1,49 @@
-// Consulta 11: Distribución por sexo y tipo de institución
-module.exports = async function (col) {
-    const resultados = await col
+// Consulta 11: Historial de desempeño por aspirante
+module.exports = async function (db) {
+  const col = db.collection("aspirantes");
+  const resultados = await col
     .aggregate([
-        {
-            $group: {
+      {
+              $group: {
                 _id: {
-                    sexo: "$sexo",
-                    tipo: "$tipo_institucion_educativa"
+                  aspirante: "$correlativo_aspirante",
+                  materia: "$materia",
                 },
-                cantidad: { $sum: 1 }
-            }
-        },
-        {
-            $project: {
-                sexo: "$_id.sexo",
-                tipo_institucion: "$_id.tipo",
-                cantidad: 1,
+                intentos: { $sum: 1 },
+                aprobados: {
+                  $sum: { $cond: ["$aprobacion", 1, 0] }
+                },
+                reprobados: {
+                  $sum: { $cond: ["$aprobacion", 0, 1] }
+                }
+              }
+            },
+            {
+              $project: {
+                correlativo_aspirante: "$_id.aspirante",
+                materia: "$_id.materia",
+                intentos: 1,
+                aprobados: 1,
+                reprobados: 1,
                 _id: 0
+              }
+            },
+            {
+              $sort: {
+                correlativo_aspirante: 1,
+                materia: 1
+              }
             }
-        },
-        {
-            $sort: {
-                sexo: 1,
-                tipo_institucion: 1
-            }
-        }
     ])
     .toArray();
+    
     return resultados.map(doc => {
         return {
-            sexo: doc.sexo,
-            tipo_institucion: doc.tipo_institucion,
-            cantidad: doc.cantidad
+            correlativo_aspirante: doc.correlativo_aspirante,
+            materia: doc.materia,
+            intentos: doc.intentos,
+            aprobados: doc.aprobados,
+            reprobados: doc.reprobados
         };
     });
 };

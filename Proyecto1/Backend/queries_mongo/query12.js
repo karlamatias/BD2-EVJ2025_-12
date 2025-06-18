@@ -1,38 +1,38 @@
-// Consulta 12: Tasa de aprobación por edad
-module.exports = async function (col) {
-  return await col
+// Consulta 12: Distribución por sexo y tipo de institución
+module.exports = async function (db) {
+    const col = db.collection("aspirantes");
+    const resultados = await col
     .aggregate([
         {
-            $match: {
-                "anio_nacimiento": { $exists: true, $type: "number", $ne: null, $ne: NaN }
-            }
-        },
-        {
-            $project: {
-                edad: { $subtract: [new Date().getFullYear(), "$anio_nacimiento"] },
-                aprobacion: 1
-            }
-        },
-        {
             $group: {
-                _id: "$edad",
-                total: { $sum: 1 },
-                aprobados: { $sum: { $cond: ["$aprobacion", 1, 0] } }
+                _id: {
+                    sexo: "$sexo",
+                    tipo: "$tipo_institucion_educativa"
+                },
+                cantidad: { $sum: 1 }
             }
         },
         {
             $project: {
-                edad: "$_id",
-                tasa_aprobacion: {
-                    $round : [
-                        { $multiply: [{ $divide: ["$aprobados", "$total"] }, 100] },
-                        2
-                    ]
-                },
+                sexo: "$_id.sexo",
+                tipo_institucion: "$_id.tipo",
+                cantidad: 1,
                 _id: 0
             }
         },
-        { $sort: { edad: 1 } }
+        {
+            $sort: {
+                sexo: 1,
+                tipo_institucion: 1
+            }
+        }
     ])
     .toArray();
+    return resultados.map(doc => {
+        return {
+            sexo: doc.sexo,
+            tipo_institucion: doc.tipo_institucion,
+            cantidad: doc.cantidad
+        };
+    });
 };
