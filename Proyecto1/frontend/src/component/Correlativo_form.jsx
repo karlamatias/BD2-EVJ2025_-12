@@ -9,7 +9,7 @@ export default function Correlativo_form({ parametro, setParametro, onSubmit }) 
         }}
       >
         <label>
-          Ingrese el valor necesario:
+          Ingrese el correlativo de un aspirante:
           <input
             type="text"
             value={parametro}

@@ -7,14 +7,14 @@ import TablaComponent from "./TablaComponent";
 //Caso para mostrar una grafica u otra
 function getChartComponent(consulta, data) {
   switch (consulta) {
-    case "Aspirantes por tipo de institución educativa":
-    case "Top 5 carreras (16-18 años)":
-    case "Prom intentos por materia":
-    case "Aprobados por carrera y año":
+    case "1. Aspirantes por tipo de institución educativa":
+    case "10. Top 5 carreras (16-18 años)":
+    case "14. Prom intentos por materia":
+    case "3. Aprobados por carrera y año":
       return <GraficaPieComponent data={data} />;
-    case "Evaluaciones públicas por mes y materia":
-    case "Tasa aprobación por edad":
-    case "Carreras con más reprobados primer intento":
+    case "9. Evaluaciones públicas por mes y materia":
+    case "13. Tasa aprobación por edad":
+    case "16. Carreras con más reprobados primer intento":
       return <GraficaLineasComponent data={data} />;
     default:
       return <GraficaBarrasComponent data={data} />;
@@ -26,18 +26,18 @@ export default function Resultado({ data, consultaActiva, loading }) {
 
   //Mostramos las consultas que van a llevar graficas (No son todas)
   const consultasGrafica = [
-    "Aspirantes por tipo de institución educativa",
-    "Cantidad de aprobados por materia",
-    "Aprobados por carrera y año",
-    "Porcentaje de aprobación por materia",
-    "Promedio de edad por carrera",
-    "Promedio edad de aprobados por carrera e institución",
-    "Distribución de aprobados por municipio y carrera",
-    "Evaluaciones públicas por mes y materia",
-    "Top 5 carreras (16-18 años)",
-    "Tasa aprobación por edad",
-    "Prom intentos por materia",
-    "Carreras con más reprobados primer intento",
+    "1. Aspirantes por tipo de institución educativa",
+    "2. Cantidad de aprobados por materia",
+    "3. Aprobados por carrera y año",
+    "4. Porcentaje de aprobación por materia",
+    "5. Promedio de edad por carrera",
+    "6. Promedio edad de aprobados por carrera e institución",
+    "8. Distribución de aprobados por municipio y carrera",
+    "9. Evaluaciones públicas por mes y materia",
+    "10. Top 5 carreras (16-18 años)",
+    "13. Tasa aprobación por edad",
+    "14. Prom intentos por materia",
+    "16. Carreras con más reprobados primer intento",
   ];
 
   if (loading) return <p>Cargando datos...</p>;

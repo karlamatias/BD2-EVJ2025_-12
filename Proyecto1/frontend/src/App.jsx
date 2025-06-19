@@ -1,25 +1,26 @@
 import { useState, useCallback } from "react";
-import Menu from "./component/menu";
+import Menu from "./component/Menu";
 import Resultado from "./component/Resultado";
-import Menu2 from "./component/menu2";
+import Menu2 from "./component/Menu2";
 import Correlativo_form from "./component/Correlativo_form";
 
 const CONSULTAS_MONGO = [
-  "Aspirantes por tipo de institución educativa",
-  "Cantidad de aprobados por materia",
-  "Aprobados por carrera y año",
-  "Porcentaje de aprobación por materia",
-  "Promedio de edad por carrera",
-  "Promedio edad de aprobados por carrera e institución",
-  "Distribución de aprobados por municipio y carrera",
-  "Evaluaciones públicas por mes y materia",
-  "Top 5 carreras (16-18 años)",
-  "Historial por aspirante",
-  "Distribución por sexo e institución",
-  "Tasa aprobación por edad",
-  "Prom intentos por materia",
-  "Historial completo de un aspirante",
-  "Carreras con más reprobados primer intento",
+  "1. Aspirantes por tipo de institución educativa",
+  "2. Cantidad de aprobados por materia",
+  "3. Aprobados por carrera y año",
+  "4. Porcentaje de aprobación por materia",
+  "5. Promedio de edad por carrera",
+  "6. Creación de colección auxiliar",
+  "7. Promedio edad de aprobados por carrera e institución",
+  "8. Distribución de aprobados por municipio y carrera",
+  "9. Evaluaciones públicas por mes y materia",
+  "10. Top 5 carreras (16-18 años)",
+  "11. Historial por aspirante",
+  "12. Distribución por sexo e institución",
+  "13. Tasa aprobación por edad",
+  "14. Prom intentos por materia",
+  "15. Historial completo de un aspirante",
+  "16. Carreras con más reprobados primer intento",
 ];
 
 const CONSULTAS_NEO4J = [
@@ -64,7 +65,7 @@ function useConsultas(consultas) {
     async (id, nombre) => {
       setConsultaActiva(nombre);
       setResultado(null);
-      if (id === 14) {
+      if (id === 15) {
         setRequiereParametro(true);
         return;
       }
