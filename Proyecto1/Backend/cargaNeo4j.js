@@ -22,6 +22,16 @@ Relaciones:
 (:Aspirante)-[:REALIZA {fecha_asignacion, fecha_evaluacion, aprobacion}]->(:Materia)
 */
 
+/*
+Quiere para  saber los estudiantes que aspiran a Ingenieria Electronica y que examenes realizaron 
+
+MATCH (a:Aspirante)-[r1:ASPIRA_A]->(c:Carrera {nombre: "INGENIERIA ELECTRONICA"}),
+      (a)-[r2:REALIZA]->(m:Materia)
+RETURN a, r1, c, r2, m
+LIMIT 50
+
+*/
+
 const fs = require("fs");
 const csv = require("csv-parser");
 const neo4j = require("neo4j-driver");

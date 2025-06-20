@@ -3,7 +3,7 @@ const path = require("path");
 const csv = require("csv-parser");
 const { MongoClient } = require("mongodb");
 
-//Conexion a la base de datos 
+//Conexion a la base de datos
 const uri = "mongodb://localhost:27017";
 const client = new MongoClient(uri);
 
@@ -15,7 +15,11 @@ async function cargarCSV() {
     const collection = db.collection("aspirantes");
 
     // Ruta del archivo (Esta en la carpeta data)
-    const filePath = path.join(__dirname, "data", "pruebas_especificas_2023.csv");
+    const filePath = path.join(
+      __dirname,
+      "data",
+      "pruebas_especificas_2023.csv"
+    );
 
     // Aquí se almacenarán temporalmente los datos fila por fila
     const aspirantes = [];
@@ -24,19 +28,29 @@ async function cargarCSV() {
       .pipe(csv())
       .on("data", (data) => {
         // Construimos documento por fila, parseando los datos necesarios
+        // Convertimos anio_nacimiento y anio_de_ingreso a Number.
+        //Convertimos aprobacion a un valor booleano (true/false).
         aspirantes.push({
-          fecha_asignacion: data.fecha_asignacion,
-          correlativo_aspirante: data.correlativo_aspirante,
-          sexo: data.sexo,
-          anio_nacimiento: Number(data.anio_nacimiento),
-          materia: data.materia,
-          numero_de_fecha_de_evaluaci: Number(data.numero_de_fecha_de_evaluaci),
-          anio_de_ingreso: Number(data.anio_de_ingreso),
-          aprobacion: data.aprobacion.toLowerCase() === "aprobado",
-          carrera_objetivo: data.carrera_objetivo,
-          departamento_institucion_ed: data.departamento_institucion_ed,
-          municipio_institucion_: data.municipio_institucion_,
-          tipo_institucion_educativa: data.tipo_institucion_educativa,
+          fecha_asignacion: data.fecha_asignacion || null,
+          correlativo_aspirante: data.correlativo_aspirante || null,
+          sexo: data.sexo || null,
+          anio_nacimiento: data.anio_nacimiento
+            ? Number(data.anio_nacimiento)
+            : null,
+          materia: data.materia || null,
+          numero_de_fecha_de_evaluaci: data.numero_de_fecha_de_evaluaci
+            ? Number(data.numero_de_fecha_de_evaluaci)
+            : null,
+          anio_de_ingreso: data.anio_de_ingreso
+            ? Number(data.anio_de_ingreso)
+            : null,
+          aprobacion: data.aprobacion
+            ? data.aprobacion.toLowerCase() === "aprobado"
+            : null,
+          carrera_objetivo: data.carrera_objetivo || null,
+          departamento_institucion_ed: data.departamento_institucion_ed || null,
+          municipio_institucion_: data.municipio_institucion_ || null,
+          tipo_institucion_educativa: data.tipo_institucion_educativa || null,
         });
       })
       //Inserción en MongoDB cuando termina de leer
