@@ -26,3 +26,12 @@ export async function createGame(data) {
   const res = await axios.post(`${API_URL}/games`, data);
   return res.data;
 }
+
+export async function createUser(data) {
+  const res = await axios.post(`${API_URL}/users`, data);
+  return res.data;
+}
+
+export async function deleteGames(id) {
+  return await axios.delete(`${API_URL}/games/${id}`);
+}
