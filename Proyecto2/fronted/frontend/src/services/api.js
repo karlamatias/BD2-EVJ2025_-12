@@ -35,3 +35,25 @@ export async function createUser(data) {
 export async function deleteGames(id) {
   return await axios.delete(`${API_URL}/games/${id}`);
 }
+
+export async function createReview({ game_id, user_id, score, comment, overwrite = false }) {
+  const res = await axios.post(`${API_URL}/reviews`, {
+    game_id, user_id, score, comment, overwrite,
+  });
+  return res.data;
+}
+
+export async function getReviewsByGame(id){
+  const res = await axios.get(`${API_URL}/games/${id}/reviews`);
+  return res.data;
+}
+
+export async function getReviewsByUser(user_id) {
+  const res = await axios.get(`${API_URL}/users/${user_id}/reviews`);
+  return res.data;
+}
+
+export async function deleteReview(id) {
+  const res = await axios.delete(`${API_URL}/reviews/${id}`);
+  return res.data;
+}
