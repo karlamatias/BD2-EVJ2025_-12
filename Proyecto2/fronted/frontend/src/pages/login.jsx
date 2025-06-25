@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
-  const [password_hash, setPassword] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { setUser } = useAuth();
@@ -14,7 +14,7 @@ export default function Login() {
     e.preventDefault();
     setError("");
     try {
-      const data = await login(email, password_hash);
+      const data = await login(email, password);
       setUser(data);
       if (data.role === "admin") {
         navigate("/admin");
@@ -59,7 +59,7 @@ export default function Login() {
             <input
               type="password"
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-300"
-              value={password_hash}
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required

@@ -3,6 +3,8 @@ const cors = require("cors");
 const { createClient } = require("redis");
 const client = require("prom-client");
 const { v4: uuidv4 } = require("uuid");
+const bcrypt = require("bcrypt");
+const SALT_ROUNDS = 10;
 
 const {
   register,
@@ -46,20 +48,28 @@ redisClient
 app.post("/users", async (req, res) => {
   const id = uuidv4();
   const { username, email, password_hash, role } = req.body;
+
   if (!username || !email || !password_hash || !role) {
     return res.status(400).json({ error: "Faltan campos obligatorios" });
   }
-  await redisClient.hSet(`user:${id}`, {
-    username,
-    email,
-    password_hash,
-    role,
-  });
 
-  // Incrementar métrica userRegistrationsTotal
-  userRegistrationsTotal.inc();
+  try {
+    const password_hash2 = await bcrypt.hash(password_hash, SALT_ROUNDS);
 
-  res.json({ id });
+    await redisClient.hSet(`user:${id}`, {
+      username,
+      email,
+      password_hash: password_hash2,
+      role,
+    });
+
+    userRegistrationsTotal.inc();
+
+    res.json({ id });
+  } catch (err) {
+    console.error("Error al crear usuario:", err);
+    res.status(500).json({ error: "Error del servidor" });
+  }
 });
 
 // Listar usuarios
@@ -96,8 +106,26 @@ app.delete("/users/:id", async (req, res) => {
 // Crear Juegos
 app.post("/games", async (req, res) => {
   const id = uuidv4();
-  const { titulo, descripcion, genero, desarrollador } = req.body;
-  if (!titulo || !descripcion || !genero || !desarrollador) {
+  const {
+    titulo,
+    descripcion,
+    genero,
+    desarrollador,
+    plataformas,
+    fecha_lanzamiento,
+    clasificacion_edad,
+    imagen_url,
+  } = req.body;
+  if (
+    !titulo ||
+    !descripcion ||
+    !genero ||
+    !desarrollador ||
+    !plataformas ||
+    !fecha_lanzamiento ||
+    !clasificacion_edad ||
+    !imagen_url
+  ) {
     return res.status(400).json({ error: "Faltan campos obligatorios" });
   }
   await redisClient.hSet(`game:${id}`, {
@@ -105,6 +133,10 @@ app.post("/games", async (req, res) => {
     descripcion,
     genero,
     desarrollador,
+    plataformas,
+    fecha_lanzamiento,
+    clasificacion_edad,
+    imagen_url,
   });
 
   // Incrementar métrica gamesCreatedTotal
@@ -163,27 +195,29 @@ app.delete("/games/:id", async (req, res) => {
 
 // Login
 app.post("/login", async (req, res) => {
-  const { email, password_hash } = req.body;
-  if (!email || !password_hash) {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
     return res.status(400).json({ error: "Faltan credenciales" });
   }
 
-  // Buscar todos los usuarios
   const keys = await redisClient.keys("user:*");
   for (const key of keys) {
     const user = await redisClient.hGetAll(key);
-    if (user.email === email && user.password_hash === password_hash) {
-      return res.json({
-        id: key.split(":")[1],
-        username: user.username,
-        role: user.role,
-      });
+    if (user.email === email) {
+      const match = await bcrypt.compare(password, user.password_hash);
+      if (match) {
+        return res.json({
+          id: key.split(":")[1],
+          username: user.username,
+          role: user.role,
+        });
+      }
     }
   }
 
   return res.status(401).json({ error: "Credenciales inválidas" });
 });
-
 
 //Crear nueva reseña
 app.post("/reviews", async (req, res) => {
@@ -211,17 +245,19 @@ app.post("/reviews", async (req, res) => {
       break;
     }
   }
-  if (existingReviewKey && !overwrite) { // Ya existe y no se permite sobrescribir
+  if (existingReviewKey && !overwrite) {
+    // Ya existe y no se permite sobrescribir
     return res.status(409).json({ error: "Reseña existente", exists: true });
   }
-  if (existingReviewKey && overwrite) { // Si existe y se quiere sobrescribir
+  if (existingReviewKey && overwrite) {
+    // Si existe y se quiere sobrescribir
     await redisClient.del(existingReviewKey);
   }
 
   const review_id = uuidv4();
   const reviewKey = `review:${review_id}`;
   const timestamp = Date.now().toString();
-  
+
   await redisClient.hSet(reviewKey, {
     game_id,
     user_id,
@@ -229,6 +265,9 @@ app.post("/reviews", async (req, res) => {
     comment,
     timestamp,
   });
+
+  reviewsTotal.inc();
+
   res.status(201).json({ message: "Reseña agregada", review_id });
 });
 
@@ -270,7 +309,6 @@ app.get("/games/:game_id/reviews", async (req, res) => {
   res.json(reviews);
 });
 
-
 //Consultar todas las reseñas hechas por un usuario
 app.get("/users/:user_id/reviews", async (req, res) => {
   const { user_id } = req.params;
@@ -297,7 +335,6 @@ app.get("/users/:user_id/reviews", async (req, res) => {
 
   res.json(reviews);
 });
-
 
 // Endpoint para exponer métricas a Prometheus
 app.get("/metrics", async (req, res) => {

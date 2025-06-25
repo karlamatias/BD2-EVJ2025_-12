@@ -1,5 +1,7 @@
 import React from "react";
 import { openNewUserModal } from "./NewUserModal";
+import { FiTrash2 } from "react-icons/fi";
+import { FaPlus } from "react-icons/fa6";
 
 export default function UserTable({ users = [], onDelete, onRefresh }) {
   return (
@@ -10,7 +12,7 @@ export default function UserTable({ users = [], onDelete, onRefresh }) {
           onClick={() => openNewUserModal(onRefresh)}
           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
         >
-          + Nuevo Usuario
+          <FaPlus size={20} />
         </button>
       </div>
 
@@ -32,9 +34,10 @@ export default function UserTable({ users = [], onDelete, onRefresh }) {
               <td className="px-4 py-2">
                 <button
                   onClick={() => onDelete(u.id)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
+                  title="Eliminar"
                 >
-                  Eliminar
+                  <FiTrash2 size={20} />
                 </button>
               </td>
             </tr>

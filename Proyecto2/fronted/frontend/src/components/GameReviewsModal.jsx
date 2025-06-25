@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { getReviewsByGame } from "../services/api";
 
-export default function GameReviewsModal({ game, onClose, onAddReview }) {
+export default function GameReviewsModal({ game, onClose, onAddReview, reviewsChanged  }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadReviews = async () => {
+      setLoading(true);
       try {
         const data = await getReviewsByGame(game.id);
         setReviews(data);
@@ -18,7 +19,7 @@ export default function GameReviewsModal({ game, onClose, onAddReview }) {
     };
 
     loadReviews();
-  }, [game.id]);
+  }, [game.id, reviewsChanged]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">

@@ -9,7 +9,8 @@ export default function UserHome() {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState(null);
-  const [viewGame, setViewGame] = useState(null); 
+  const [viewGame, setViewGame] = useState(null);
+  const [reviewsChanged, setReviewsChanged] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -32,10 +33,16 @@ export default function UserHome() {
       await createReview({ game_id, user_id, score, comment }); // sin overwrite
       setSelectedGame(null);
       await Swal.fire("¡Listo!", "Reseña agregada exitosamente", "success");
+
+      const updatedGames = await getGames();
+      setGames(updatedGames);
+
       setViewGame({ id: game_id, title: selectedGame.title });
+      setReviewsChanged((prev) => !prev);
     } catch (error) {
       if (error.response && error.response.status === 409) {
-          const result = await Swal.fire({ // Ya existe una reseña, pedir confirmacion
+        const result = await Swal.fire({
+          // Ya existe una reseña, pedir confirmacion
           title: "¿Sobrescribir reseña?",
           text: "Ya habías publicado una reseña sobre este juego. Si continúas, se eliminará la anterior.",
           icon: "warning",
@@ -45,24 +52,46 @@ export default function UserHome() {
           confirmButtonText: "Sobrescribir",
           cancelButtonText: "Cancelar",
         });
-  
+
         if (result.isConfirmed) {
           try {
-            await createReview({ game_id, user_id, score, comment, overwrite: true });
+            await createReview({
+              game_id,
+              user_id,
+              score,
+              comment,
+              overwrite: true,
+            });
             setSelectedGame(null);
-            await Swal.fire("Actualizada", "Tu reseña fue reemplazada", "success");
+            await Swal.fire(
+              "Actualizada",
+              "Tu reseña fue reemplazada",
+              "success"
+            );
+
+            const updatedGames = await getGames();
+            setGames(updatedGames);
+
             setViewGame({ id: game_id, title: selectedGame.title });
+            setReviewsChanged((prev) => !prev);
           } catch (e) {
-            await Swal.fire("Error", "Ocurrió un error al sobrescribir la reseña", "error");
+            await Swal.fire(
+              "Error",
+              "Ocurrió un error al sobrescribir la reseña",
+              "error"
+            );
           }
         }
       } else {
         console.error("Error al enviar reseña:", error);
-        await Swal.fire("Error", "Ocurrió un error al registrar la reseña", "error");
+        await Swal.fire(
+          "Error",
+          "Ocurrió un error al registrar la reseña",
+          "error"
+        );
       }
     }
   };
-  
 
   return (
     <div className="p-6">
@@ -82,16 +111,27 @@ export default function UserHome() {
               className="bg-white shadow-xl rounded-2xl p-6 flex flex-col justify-between transition duration-300 border border-blue-100 hover:border-blue-300"
             >
               <div>
+                {game.imagen_url ? (
+                  <img
+                    src={game.imagen_url}
+                    alt={game.titulo}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                ) : (
+                  <span className="text-gray-400 italic">Sin imagen</span>
+                )}
                 <h2 className="text-2xl font-bold text-blue-700 mb-2 font-sans">
                   {game.titulo}
                 </h2>
 
                 {game.average_score !== null ? (
-                    <p className="text-yellow-600 font-semibold mt-2">
-                        ⭐ {game.average_score} / 10
-                    </p>
+                  <p className="text-yellow-600 font-semibold mt-2">
+                    ⭐ {game.average_score} / 10
+                  </p>
                 ) : (
-                    <p className="text-gray-400 italic mt-2">Aún sin puntuaciones</p>
+                  <p className="text-gray-400 italic mt-2">
+                    Aún sin puntuaciones
+                  </p>
                 )}
 
                 <hr className="border-blue-200 my-3" />
@@ -102,7 +142,9 @@ export default function UserHome() {
                     {game.genero}
                   </p>
                   <p>
-                    <span className="text-blue-900 font-semibold">Desarrollador:</span>{" "}
+                    <span className="text-blue-900 font-semibold">
+                      Desarrollador:
+                    </span>{" "}
                     {game.desarrollador}
                   </p>
                 </div>
@@ -119,41 +161,40 @@ export default function UserHome() {
 
               <div className="mt-6 flex flex-col gap-2">
                 <button
-                    className="bg-slate-500 hover:bg-slate-600 text-white py-2 px-4 rounded-xl text-sm font-semibold shadow"
-                    onClick={() => setViewGame(game)}
+                  className="bg-slate-500 hover:bg-slate-600 text-white py-2 px-4 rounded-xl text-sm font-semibold shadow"
+                  onClick={() => setViewGame(game)}
                 >
-                    Ver reseñas
+                  Ver reseñas
                 </button>
                 <button
-                    className="bg-sky-600 hover:bg-sky-700 text-white py-2 px-4 rounded-xl text-sm font-semibold shadow"
-                    onClick={() => setSelectedGame(game)}
+                  className="bg-sky-600 hover:bg-sky-700 text-white py-2 px-4 rounded-xl text-sm font-semibold shadow"
+                  onClick={() => setSelectedGame(game)}
                 >
-                    Agregar reseña
+                  Agregar reseña
                 </button>
               </div>
             </div>
           ))}
         </div>
+      )}
 
-        )}
-        
-        { selectedGame && (
-            <AddReviewModal
-                game={selectedGame}
-                userId={user?.id}
-                onClose={() => setSelectedGame(null)}
-                onSubmit={handleSubmitReview}
-            />
-        )}
+      {selectedGame && (
+        <AddReviewModal
+          game={selectedGame}
+          userId={user?.id}
+          onClose={() => setSelectedGame(null)}
+          onSubmit={handleSubmitReview}
+        />
+      )}
 
-        {viewGame && (
-            <GameReviewsModal 
-                game={viewGame} 
-                onClose={() => setViewGame(null)} 
-                onAddReview={(game) => setSelectedGame(game)}
-            />
-        )}
-        
+      {viewGame && (
+        <GameReviewsModal
+          game={viewGame}
+          onClose={() => setViewGame(null)}
+          onAddReview={(game) => setSelectedGame(game)}
+          reviewsChanged={reviewsChanged}
+        />
+      )}
     </div>
   );
 }
