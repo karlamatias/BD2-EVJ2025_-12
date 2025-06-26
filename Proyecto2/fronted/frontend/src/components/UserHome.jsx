@@ -110,68 +110,86 @@ export default function UserHome() {
               key={game.id}
               className="bg-white shadow-xl rounded-2xl p-6 flex flex-col justify-between transition duration-300 border border-blue-100 hover:border-blue-300"
             >
-              <div>
-                {game.imagen_url ? (
-                  <img
-                    src={game.imagen_url}
-                    alt={game.titulo}
-                    className="w-16 h-16 object-cover rounded"
-                  />
-                ) : (
-                  <span className="text-gray-400 italic">Sin imagen</span>
-                )}
-                <h2 className="text-2xl font-bold text-blue-700 mb-2 font-sans">
-                  {game.titulo}
-                </h2>
 
-                {game.average_score !== null ? (
-                  <p className="text-yellow-600 font-semibold mt-2">
-                    ⭐ {game.average_score} / 10
-                  </p>
-                ) : (
-                  <p className="text-gray-400 italic mt-2">
-                    Aún sin puntuaciones
-                  </p>
-                )}
+              {/* Imagen del juego */}
+              {game.imagen_url ? (
+                <img
+                  src={game.imagen_url}
+                  alt={game.titulo}
+                  className="w-full h-48 object-cover"
+                />
+              ) : (
+                <div className="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500 italic">
+                  Sin imagen
+                </div>
+              )}
+              
+              <div className="p-6 flex flex-col justify-between h-full">
+                <div>
+                  
+                  <h2 className="text-2xl font-bold text-blue-700 mb-2 font-sans">
+                    {game.titulo}
+                  </h2>
 
-                <hr className="border-blue-200 my-3" />
+                  {game.average_score !== null ? (
+                    <p className="text-yellow-600 font-semibold mt-2">
+                      ⭐ {game.average_score} / 10
+                    </p>
+                  ) : (
+                    <p className="text-gray-400 italic mt-2">
+                      Aún sin puntuaciones
+                    </p>
+                  )}
 
-                <div className="space-y-1 text-sm text-gray-700 font-medium leading-relaxed">
-                  <p>
-                    <span className="text-blue-900 font-semibold">Género:</span>{" "}
-                    {game.genero}
-                  </p>
-                  <p>
-                    <span className="text-blue-900 font-semibold">
-                      Desarrollador:
-                    </span>{" "}
-                    {game.desarrollador}
-                  </p>
+                  <hr className="border-blue-200 my-3" />
+
+                  <div className="space-y-1 text-sm text-gray-700 font-medium leading-relaxed">
+                    <p>
+                      <span className="text-blue-900 font-semibold">Género:</span>{" "}
+                      {game.genero}
+                    </p>
+                    <p>
+                      <span className="text-blue-900 font-semibold">Desarrollador:</span>{" "}
+                      {game.desarrollador}
+                    </p>
+                    <p>
+                      <span className="text-blue-900 font-semibold">Plataformas:</span>{" "}
+                      {game.plataformas}
+                    </p>
+                    <p>
+                      <span className="text-blue-900 font-semibold">Lanzamiento:</span>{" "}
+                      {game.fecha_lanzamiento}
+                    </p>
+                    <p>
+                      <span className="text-blue-900 font-semibold">Edad mínima:</span>{" "}
+                      {game.clasificacion_edad}
+                    </p>
+                  </div>
+
+                  {game.descripcion && (
+                    <>
+                      <hr className="border-blue-200 my-4" />
+                      <p className="text-gray-600 text-sm italic leading-relaxed font-light">
+                        {game.descripcion}
+                      </p>
+                    </>
+                  )}
                 </div>
 
-                {game.descripcion && (
-                  <>
-                    <hr className="border-blue-200 my-4" />
-                    <p className="text-gray-600 text-sm italic leading-relaxed font-light">
-                      {game.descripcion}
-                    </p>
-                  </>
-                )}
-              </div>
-
-              <div className="mt-6 flex flex-col gap-2">
-                <button
-                  className="bg-slate-500 hover:bg-slate-600 text-white py-2 px-4 rounded-xl text-sm font-semibold shadow"
-                  onClick={() => setViewGame(game)}
-                >
-                  Ver reseñas
-                </button>
-                <button
-                  className="bg-sky-600 hover:bg-sky-700 text-white py-2 px-4 rounded-xl text-sm font-semibold shadow"
-                  onClick={() => setSelectedGame(game)}
-                >
-                  Agregar reseña
-                </button>
+                <div className="mt-6 flex flex-col gap-2">
+                  <button
+                    className="bg-slate-500 hover:bg-slate-600 text-white py-2 px-4 rounded-xl text-sm font-semibold shadow"
+                    onClick={() => setViewGame(game)}
+                  >
+                    Ver reseñas
+                  </button>
+                  <button
+                    className="bg-sky-600 hover:bg-sky-700 text-white py-2 px-4 rounded-xl text-sm font-semibold shadow"
+                    onClick={() => setSelectedGame(game)}
+                  >
+                    Agregar reseña
+                  </button>
+                </div>
               </div>
             </div>
           ))}
