@@ -1,8 +1,5 @@
-const { createClient } = require("redis");
-const bcrypt = require("bcrypt");
 const { v4: uuidv4 } = require("uuid");
-
-// Importar métricas
+const bcrypt = require("bcrypt");
 const {
   userRegistrationsTotal,
   gamesCreatedTotal,
@@ -11,14 +8,26 @@ const {
 
 const SALT_ROUNDS = 10;
 
-const redisClient = createClient({
-  url: process.env.REDIS_URL || "redis://localhost:6379",
-});
+const comentarios = [
+  (title) => `¡Me encantó ${title}! Muy recomendable.`,
+  (title) => `${title} tiene una jugabilidad excelente.`,
+  (title) => `No esperaba mucho de ${title}, pero me sorprendió.`,
+  (title) => `${title} tiene gráficos increíbles.`,
+  (title) => `La historia de ${title} es envolvente.`,
+  (title) => `Podría jugar ${title} una y otra vez.`,
+  (title) => `${title} no fue lo que esperaba, pero no está mal.`,
+  (title) => `${title} tiene sus fallos, pero es disfrutable.`,
+  (title) => `Una experiencia única con ${title}.`,
+  (title) => `${title} me mantuvo entretenido por horas.`,
+];
 
-const hashPassword = (pwd) => bcrypt.hash(pwd, SALT_ROUNDS);
+async function hashPassword(pwd) {
+  return bcrypt.hash(pwd, SALT_ROUNDS);
+}
 
-async function seed() {
-  console.log("Seeding Redis with test data...");
+async function runSeed(redisClient) {
+  const users = [];
+  const games = [];
 
   // Admin
   const adminId = uuidv4();
@@ -31,8 +40,7 @@ async function seed() {
   });
   userRegistrationsTotal.inc();
 
-  // Users
-  const users = [];
+  // Usuarios
   for (let i = 1; i <= 15; i++) {
     const id = uuidv4();
     const pwd = await hashPassword(`user${i}`);
@@ -42,12 +50,11 @@ async function seed() {
       password_hash: pwd,
       role: "user",
     });
-    userRegistrationsTotal.inc();
     users.push({ id, username: `usuario${i}` });
+    userRegistrationsTotal.inc();
   }
 
-  // Games
-  const games = [];
+  // Juegos
   const gameTemplates = [
     {
       titulo: "Hollow Knight",
@@ -238,25 +245,12 @@ async function seed() {
     gamesCreatedTotal.inc();
   }
 
-  const comentarios = [
-    (title) => `¡Me encantó ${title}! Muy recomendable.`,
-    (title) => `${title} tiene una jugabilidad excelente.`,
-    (title) => `No esperaba mucho de ${title}, pero me sorprendió.`,
-    (title) => `${title} tiene gráficos increíbles.`,
-    (title) => `La historia de ${title} es envolvente.`,
-    (title) => `Podría jugar ${title} una y otra vez.`,
-    (title) => `${title} no fue lo que esperaba, pero no está mal.`,
-    (title) => `${title} tiene sus fallos, pero es disfrutable.`,
-    (title) => `Una experiencia única con ${title}.`,
-    (title) => `${title} me mantuvo entretenido por horas.`,
-  ];
-
   // Reseñas
   for (const game of games) {
     for (const user of users) {
       if (Math.random() < 0.3) {
         const reviewId = uuidv4();
-        const comentarioFn =
+        const commentFn =
           comentarios[Math.floor(Math.random() * comentarios.length)];
         const score = Math.floor(Math.random() * 9) + 2;
 
@@ -264,7 +258,7 @@ async function seed() {
           game_id: game.id,
           user_id: user.id,
           score,
-          comment: comentarioFn(game.titulo),
+          comment: commentFn(game.titulo),
           timestamp: Date.now().toString(),
         });
         reviewsTotal.inc();
@@ -273,16 +267,4 @@ async function seed() {
   }
 }
 
-async function main() {
-  try {
-    await redisClient.connect();
-    await seed();
-    console.log("Datos insertados correctamente.");
-  } catch (err) {
-    console.error("Error en el seeder:", err);
-  } finally {
-    await redisClient.quit();
-  }
-}
-
-main();
+module.exports = runSeed;

@@ -5,6 +5,7 @@ const client = require("prom-client");
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 const SALT_ROUNDS = 10;
+const seedData = require("./seed-func");
 
 const {
   register,
@@ -334,6 +335,16 @@ app.get("/users/:user_id/reviews", async (req, res) => {
   }
 
   res.json(reviews);
+});
+
+app.post("/seed", async (req, res) => {
+  try {
+    await seedData(redisClient);
+    res.json({ message: "Base de datos de Redis poblada correctamente." });
+  } catch (err) {
+    console.error("Error al ejecutar seed:", err);
+    res.status(500).json({ error: "Error al ejecutar el seed." });
+  }
 });
 
 // Endpoint para exponer métricas a Prometheus
